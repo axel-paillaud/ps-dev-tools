@@ -48,6 +48,7 @@ BUILD_IGNORE_FILE="$MODULE_DIR/.buildignore"
 if [ ! -f "$BUILD_IGNORE_FILE" ]; then
   echo -e "${RED}${BOLD}\n✖ ERREUR : Aucun fichier .buildignore trouvé.\n${RESET}" >&2
   echo -e "${RED}Créez un fichier .buildignore à la racine de votre module.${RESET}" >&2
+  echo -e "${RED}cp vendor/axel-paillaud/ps-dev-tools/buildignore/default.buildignore${RESET}" >&2
   exit 1
 fi
 
@@ -93,4 +94,3 @@ rm -rf "$BUILD_DIR"
 rmdir "$BUILD_ROOT" 2>/dev/null || true
 
 echo -e "${GREEN}✅ Archive créée : $OUTPUT_ZIP${RESET}"
-
