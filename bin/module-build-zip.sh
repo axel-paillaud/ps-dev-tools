@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# NOTE: You have to be in the bin directory to run this script
-# cd <presta-root>/modules/<module-name>/bin
+# NOTE: You can now run this script from the module root directory
+# cd <presta-root>/modules/<module-name> && ./bin/build-zip.sh
 
-MODULE_DIR="$(dirname "$PWD")"
+# Detect module directory (parent of the bin/ folder)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODULE_DIR="$(dirname "$SCRIPT_DIR")"
 MODULE_NAME="$(basename "$MODULE_DIR")"
 BUILD_IGNORE_FILE="$MODULE_DIR/.buildignore"
 
-# BUILD_DIR="/tmp/${MODULE_NAME}"
 BUILD_ROOT="$HOME/.module_builds"
 BUILD_DIR="$BUILD_ROOT/$MODULE_NAME"
 OUTPUT_ZIP=~/"${MODULE_NAME}.zip"
@@ -16,7 +17,7 @@ OUTPUT_ZIP=~/"${MODULE_NAME}.zip"
 if [ -z "$BASH_VERSION" ]; then
   echo -e "\033[31m\033[1m\n✖ ERREUR : Ce script doit être exécuté avec bash.\033[0m" >&2
   echo -e "\033[31mShell détecté : ${SHELL:-inconnu}\033[0m" >&2
-  echo -e "\033[31mUtilisez : bash build-zip.sh ou ./build-zip.sh\033[0m" >&2
+  echo -e "\033[31mUtilisez : bash bin/build-zip.sh ou ./bin/build-zip.sh\033[0m" >&2
   exit 1
 fi
 
@@ -79,3 +80,4 @@ rm -rf "$BUILD_DIR"
 rmdir "$BUILD_ROOT" 2>/dev/null || true
 
 echo "✅ Archive créée : $OUTPUT_ZIP"
+
