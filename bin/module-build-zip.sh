@@ -1,14 +1,20 @@
 #!/bin/bash
+# Script must be run from module root: ./vendor/bin/module-build-zip.sh
 
-# NOTE: You can now run this script from the module root directory
-# cd <presta-root>/modules/<module-name> && ./bin/build-zip.sh
-
-# Detect module directory (parent of the bin/ folder)
+# Detect module root (find composer.json)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MODULE_DIR="$(dirname "$SCRIPT_DIR")"
-MODULE_NAME="$(basename "$MODULE_DIR")"
-BUILD_IGNORE_FILE="$MODULE_DIR/.buildignore"
+MODULE_DIR="$SCRIPT_DIR"
 
+while [[ ! -f "$MODULE_DIR/composer.json" ]] && [[ "$MODULE_DIR" != "/" ]]; do
+  MODULE_DIR="$(dirname "$MODULE_DIR")"
+done
+
+if [[ ! -f "$MODULE_DIR/composer.json" ]]; then
+  echo "❌ Impossible de trouver la racine du projet (composer.json introuvable)" >&2
+  exit 1
+fi
+
+MODULE_NAME="$(basename "$MODULE_DIR")"
 BUILD_ROOT="$HOME/.module_builds"
 BUILD_DIR="$BUILD_ROOT/$MODULE_NAME"
 OUTPUT_ZIP=~/"${MODULE_NAME}.zip"
@@ -17,26 +23,40 @@ OUTPUT_ZIP=~/"${MODULE_NAME}.zip"
 if [ -z "$BASH_VERSION" ]; then
   echo -e "\033[31m\033[1m\n✖ ERREUR : Ce script doit être exécuté avec bash.\033[0m" >&2
   echo -e "\033[31mShell détecté : ${SHELL:-inconnu}\033[0m" >&2
-  echo -e "\033[31mUtilisez : bash bin/build-zip.sh ou ./bin/build-zip.sh\033[0m" >&2
+  echo -e "\033[31mUtilisez : bash vendor/bin/module-build-zip.sh\033[0m" >&2
   exit 1
 fi
 
-# --- Console color ---
+# --- Console colors ---
 if command -v tput >/dev/null 2>&1; then
   RED="$(tput setaf 1)"
+  GREEN="$(tput setaf 2)"
+  YELLOW="$(tput setaf 3)"
   BOLD="$(tput bold)"
   RESET="$(tput sgr0)"
 else
   RED=$'\033[31m'
+  GREEN=$'\033[32m'
+  YELLOW=$'\033[33m'
   BOLD=$'\033[1m'
   RESET=$'\033[0m'
 fi
 
-# Check .buildignore file
-if [ ! -f "$BUILD_IGNORE_FILE" ]; then
-  echo -e "${RED}${BOLD}\n✖ ERREUR : Le fichier '.buildignore' est requis mais introuvable.\n${RESET}" >&2
-  echo -e "${RED}Chemin attendu : $BUILD_IGNORE_FILE${RESET}" >&2
-  echo -e "${RED}Veuillez créer ce fichier avec les patterns à exclure du build.${RESET}" >&2
+# Detect buildignore file (local first, then default from package)
+LOCAL_BUILDIGNORE="$MODULE_DIR/.buildignore"
+PACKAGE_BUILDIGNORE="$MODULE_DIR/vendor/axel-paillaud/ps-dev-tools/buildignore/default.buildignore"
+
+if [ -f "$LOCAL_BUILDIGNORE" ]; then
+  BUILD_IGNORE_FILE="$LOCAL_BUILDIGNORE"
+  echo -e "${GREEN}📋 Utilisation du .buildignore local${RESET}"
+elif [ -f "$PACKAGE_BUILDIGNORE" ]; then
+  BUILD_IGNORE_FILE="$PACKAGE_BUILDIGNORE"
+  echo -e "${YELLOW}📋 Utilisation du .buildignore par défaut du package${RESET}"
+else
+  echo -e "${RED}${BOLD}\n✖ ERREUR : Aucun fichier .buildignore trouvé.\n${RESET}" >&2
+  echo -e "${RED}Créez un fichier .buildignore à la racine de votre module,${RESET}" >&2
+  echo -e "${RED}ou copiez le template :${RESET}" >&2
+  echo -e "${RED}  cp vendor/axel-paillaud/ps-dev-tools/buildignore/default.buildignore .buildignore${RESET}" >&2
   exit 1
 fi
 
@@ -71,7 +91,7 @@ composer install --no-dev --quiet
 echo "📦 Optimisation de l'autoloader..."
 composer dump-autoload --optimize --no-dev --quiet
 
-echo "📦 Création de l’archive zip finale..."
+echo "📦 Création de l'archive zip finale..."
 cd "$BUILD_ROOT"
 zip -r "$OUTPUT_ZIP" "$(basename "$BUILD_DIR")" > /dev/null
 
@@ -79,5 +99,5 @@ echo "🧹 Nettoyage..."
 rm -rf "$BUILD_DIR"
 rmdir "$BUILD_ROOT" 2>/dev/null || true
 
-echo "✅ Archive créée : $OUTPUT_ZIP"
+echo -e "${GREEN}✅ Archive créée : $OUTPUT_ZIP${RESET}"
 
