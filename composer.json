@@ -1,0 +1,17 @@
+{
+    "name": "axel-paillaud/ps-dev-tools",
+    "description": "Outils de développement pour modules PrestaShop",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Axel Paillaud"
+        }
+    ],
+    "require": {
+        "php": ">=7.2"
+    },
+    "bin": [
+        "bin/module-build-zip.sh"
+    ]
+}
