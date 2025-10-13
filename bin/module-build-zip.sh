@@ -5,11 +5,6 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODULE_DIR="$SCRIPT_DIR"
 
-# Juste après la détection de MODULE_DIR
-echo "DEBUG: MODULE_DIR = $MODULE_DIR"
-echo "DEBUG: PACKAGE_BUILDIGNORE = $PACKAGE_BUILDIGNORE"
-echo "DEBUG: File exists? $([ -f "$PACKAGE_BUILDIGNORE" ] && echo "YES" || echo "NO")"
-
 while [[ ! -f "$MODULE_DIR/composer.json" ]] && [[ "$MODULE_DIR" != "/" ]]; do
   MODULE_DIR="$(dirname "$MODULE_DIR")"
 done
@@ -47,23 +42,16 @@ else
   RESET=$'\033[0m'
 fi
 
-# Detect buildignore file (local first, then default from package)
-LOCAL_BUILDIGNORE="$MODULE_DIR/.buildignore"
-PACKAGE_BUILDIGNORE="$MODULE_DIR/vendor/axel-paillaud/ps-dev-tools/buildignore/default.buildignore"
+# Detect buildignore file (must be in module root)
+BUILD_IGNORE_FILE="$MODULE_DIR/.buildignore"
 
-if [ -f "$LOCAL_BUILDIGNORE" ]; then
-  BUILD_IGNORE_FILE="$LOCAL_BUILDIGNORE"
-  echo -e "${GREEN}📋 Utilisation du .buildignore local${RESET}"
-elif [ -f "$PACKAGE_BUILDIGNORE" ]; then
-  BUILD_IGNORE_FILE="$PACKAGE_BUILDIGNORE"
-  echo -e "${YELLOW}📋 Utilisation du .buildignore par défaut du package${RESET}"
-else
+if [ ! -f "$BUILD_IGNORE_FILE" ]; then
   echo -e "${RED}${BOLD}\n✖ ERREUR : Aucun fichier .buildignore trouvé.\n${RESET}" >&2
-  echo -e "${RED}Créez un fichier .buildignore à la racine de votre module,${RESET}" >&2
-  echo -e "${RED}ou copiez le template :${RESET}" >&2
-  echo -e "${RED}  cp vendor/axel-paillaud/ps-dev-tools/buildignore/default.buildignore .buildignore${RESET}" >&2
+  echo -e "${RED}Créez un fichier .buildignore à la racine de votre module.${RESET}" >&2
   exit 1
 fi
+
+echo -e "${GREEN}📋 Utilisation du .buildignore du module${RESET}"
 
 # Check composer
 if ! command -v composer >/dev/null 2>&1; then
