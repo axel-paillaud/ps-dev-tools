@@ -13,14 +13,5 @@
     },
     "bin": [
         "bin/module-build-zip.sh"
-    ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/axel-paillaud/ps-dev-tools"
-        }
-    ],
-    "require-dev": {
-        "axel-paillaud/ps-dev-tools": "^1.0"
-    }
+    ]
 }
