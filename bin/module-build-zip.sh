@@ -5,6 +5,11 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODULE_DIR="$SCRIPT_DIR"
 
+# Juste après la détection de MODULE_DIR
+echo "DEBUG: MODULE_DIR = $MODULE_DIR"
+echo "DEBUG: PACKAGE_BUILDIGNORE = $PACKAGE_BUILDIGNORE"
+echo "DEBUG: File exists? $([ -f "$PACKAGE_BUILDIGNORE" ] && echo "YES" || echo "NO")"
+
 while [[ ! -f "$MODULE_DIR/composer.json" ]] && [[ "$MODULE_DIR" != "/" ]]; do
   MODULE_DIR="$(dirname "$MODULE_DIR")"
 done
